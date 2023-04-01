@@ -3,8 +3,9 @@ import { PluginsManager } from './plugins/plugins-manager';
 import { StatsPlugin } from './plugins/stats.plugin';
 import { LinksPlugin } from './plugins/links.plugin';
 import { SubscribePlugin } from './plugins/subscribe.plugin';
+import { config } from './config';
 
-const token = '6175282363:AAEIMmzSFcrohTqIryNfwYiQzIFL1SDS51c';
+const token = config.BOT_TOKEN;
 const bot = new Telegraf(token);
 
 const pluginsManager = new PluginsManager();
