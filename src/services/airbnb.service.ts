@@ -5,26 +5,19 @@ import { ListingDetails } from '../models/listing-details.interface';
 const statsSelector = '.to8eev7.dir.dir-ltr';
 const listingCardSelector = 'div[data-testid="card-container"]';
 const listingNameSelector = 'span[data-testid="listing-card-name"]';
-const pagesSelector = '.p1j2gy66 a.l1j9v1wn';
+const pagesSelector = '.p1j2gy66 a[href]';
 
 export class AirbnbService {
-  PRICE_MIN = 0;
-  PRICE_MAX = 100;
-  CHECKIN = '2023-04-02';
-  CHECKOUT = '2023-04-09';
-  ADULTS = 1;
-  ROOM_TYPE = 'Entire%20home%2Fapt';
-
   browser: Browser;
   page: Page;
 
   getLink() {
     return 'https://ru.airbnb.com/s/Porto--Portugal/homes?' +
       'refinement_paths%5B%5D=%2Fhomes&' +
-      `checkin=${this.CHECKIN}&` +
-      `checkout=${this.CHECKOUT}&` +
+      `checkin=${config.CHECKIN}&` +
+      `checkout=${config.CHECKOUT}&` +
       'date_picker_type=calendar&' +
-      `adults=${this.ADULTS}&` +
+      `adults=${config.ADULTS}&` +
       'search_type=user_map_move&' +
       'tab_id=home_tab&' +
       'query=Porto%2C%20Portugal&' +
@@ -33,15 +26,15 @@ export class AirbnbService {
       'price_filter_input_type=0&' +
       'price_filter_num_nights=7&' +
       'channel=EXPLORE&' +
-      `room_types%5B%5D=${this.ROOM_TYPE}&` +
-      `price_min=${this.PRICE_MIN}&` +
-      `price_max=${this.PRICE_MAX}&` +
-      'ne_lat=41.2144518643132&' +
-      'ne_lng=-8.435299214999048&' +
-      'sw_lat=40.930159741908476&' +
-      'sw_lng=-8.8047917374399&' +
-      'zoom=11&' +
-      'zoom_level=11&' +
+      `room_types%5B%5D=${config.ROOM_TYPE}&` +
+      `price_min=${config.PRICE_MIN}&` +
+      `price_max=${config.PRICE_MAX}&` +
+      'ne_lat=41.27535070924899&' +
+      'ne_lng=-8.478279470202153&' +
+      'sw_lat=41.09352896016996&' +
+      'sw_lng=-8.725812991178714&' +
+      'zoom=11.577921260194934&' +
+      'zoom_level=11.577921260194934&' +
       'search_by_map=true';
   }
 
@@ -77,8 +70,9 @@ export class AirbnbService {
     const [name, price, link] = await Promise.all([
       listingNameElement.evaluate((el) => el.textContent),
       listingElement.evaluate((el) =>
-        el.textContent.match(/\s€\s\d+\s/)?.[0] ||
-        el.textContent.match(/€\s\d+\s/)[0]
+          (
+            el.textContent.match(/\s€\s\d+\s\d*/)?.[0] || el.textContent.match(/€\s\d+\s\d*/)[0]
+          ).replace(/\s/g, '')
       ),
       listingLinkElement.evaluate((el) => el.href),
     ]);
@@ -107,7 +101,9 @@ export class AirbnbService {
     const allListingsDetails = [];
 
     allListingsDetails.push(...await this.getOnePageListingsDetails());
-    for (const page of pages) {
+
+    for (let pageIndex = 0; pageIndex < pages.length; pageIndex+=1) {
+      const page = (await this.getPages())[pageIndex];
       await page.click();
       allListingsDetails.push(...await this.getOnePageListingsDetails());
     }

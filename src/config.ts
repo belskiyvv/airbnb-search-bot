@@ -3,4 +3,11 @@ export const config = {
   CHECK_INTERVAL: 15 * 60 * 1000,
   BOT_TOKEN: process.env.BOT_TOKEN,
   WAIT_FOR_PAGES_TIMEOUT: 5000,
+  MAX_LISTINGS_PER_MESSAGE: 10,
+  PRICE_MIN: 0,
+  PRICE_MAX: 2000,
+  CHECKIN: '2023-10-08',
+  CHECKOUT: '2023-11-05',
+  ADULTS: 2,
+  ROOM_TYPE: 'Entire%20home%2Fapt',
 }

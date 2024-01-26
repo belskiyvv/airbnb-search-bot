@@ -22,7 +22,19 @@ export class SubscribePlugin extends Plugin {
     this.bot.command(SubscribePlugin.pluginName, (context) =>
       this.execute(context as any),
     );
-    setInterval(() => this.sendNews(), config.CHECK_INTERVAL);
+    setInterval(() =>
+        this.sendNews().catch((err) => {
+          console.error(err);
+          this.catchError();
+        }),
+      config.CHECK_INTERVAL
+    );
+  }
+
+  catchError() {
+    this.subscribedChatIds.forEach((chatId) =>
+      this.bot.telegram.sendMessage(chatId, 'Something went wrong!'),
+    );
   }
 
   async sendNews() {
@@ -46,7 +58,7 @@ export class SubscribePlugin extends Plugin {
       !listings.find((newListing) => listingComparator(prevListing, newListing))
     );
 
-    if(!appeared.length && !disappeared.length) {
+    if (!appeared.length && !disappeared.length) {
       return;
     }
 
@@ -62,6 +74,8 @@ export class SubscribePlugin extends Plugin {
       .concat('<a href="">_</a>')
       .join('\n');
 
+    this.previousListings = listings;
+
     this.subscribedChatIds.forEach((chatId) =>
       this.bot.telegram.sendMessage(chatId, message, { parse_mode: 'HTML' }),
     );
@@ -70,7 +84,7 @@ export class SubscribePlugin extends Plugin {
   async execute(context: NarrowedContext<Context, any>) {
     const chatId = context.message.chat.id;
 
-    if(this.subscribedChatIds.includes(chatId)) {
+    if (this.subscribedChatIds.includes(chatId)) {
       return context.reply('Already subscribed!');
     }
 

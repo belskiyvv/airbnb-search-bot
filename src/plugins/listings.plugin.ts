@@ -2,9 +2,10 @@ import { Context, NarrowedContext, Telegraf } from 'telegraf';
 import { Plugin } from './plugin.abstract';
 import { AirbnbService } from '../services/airbnb.service';
 import { ListingDetails } from '../models/listing-details.interface';
+import { config } from '../config';
 
-export class LinksPlugin extends Plugin {
-  static pluginName = 'links';
+export class ListingsPlugin extends Plugin {
+  static pluginName = 'listings';
 
   constructor(
     private bot: Telegraf,
@@ -13,7 +14,7 @@ export class LinksPlugin extends Plugin {
   }
 
   register() {
-    this.bot.command(LinksPlugin.pluginName, (context) =>
+    this.bot.command(ListingsPlugin.pluginName, (context) =>
       this.execute(context as any),
     );
   }
@@ -24,15 +25,20 @@ export class LinksPlugin extends Plugin {
 
   async execute(context: NarrowedContext<Context, any>) {
     const airbnb = new AirbnbService();
-    const listings = await airbnb.getAllListingsDetails();
-    const message = listings
+    let listings = (await airbnb.getAllListingsDetails())
       .sort((listing1, listing2) =>
         +listing1.price.match(/\d+/)[0] - +listing2.price.match(/\d+/)[0],
       )
-      .map((listing) => this.listingDetailsToLink(listing))
-      .concat('<a href="">_</a>')
-      .join('\n');
+      .map((listing) => this.listingDetailsToLink(listing));
+    const maxCountPerMessage = config.MAX_LISTINGS_PER_MESSAGE;
 
-    await context.reply(message, { parse_mode: 'HTML' });
+    for (var i = 0; i < Math.ceil(listings.length / maxCountPerMessage); i++) {
+      const message = listings
+        .slice(i * maxCountPerMessage, (i + 1) * maxCountPerMessage)
+        .concat('<a href="">_</a>')
+        .join('\n');
+
+      await context.reply(message, { parse_mode: 'HTML' });
+    }
   }
 }
