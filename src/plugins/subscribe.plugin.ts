@@ -68,7 +68,13 @@ export class SubscribePlugin extends Plugin {
   }
 
   async execute(context: NarrowedContext<Context, any>) {
-    this.subscribedChatIds.push(context.message.chat.id);
+    const chatId = context.message.chat.id;
+
+    if(this.subscribedChatIds.includes(chatId)) {
+      return context.reply('Already subscribed!');
+    }
+
+    this.subscribedChatIds.push(chatId);
     await context.reply('Subscribed!');
   }
 }

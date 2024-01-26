@@ -95,8 +95,8 @@ export class AirbnbService {
   }
 
   private async getPages(): Promise<ElementHandle[]> {
-    await this.page.waitForSelector(pagesSelector);
-    const allPages = await this.page.$$(pagesSelector);
+    await this.page.waitForSelector(pagesSelector, { timeout: config.WAIT_FOR_PAGES_TIMEOUT }).catch(() => true);
+    const allPages = await this.page.$$(pagesSelector).catch(() => []);
     allPages.shift(); //remove last item because this is > - next page button
     return allPages;
   }

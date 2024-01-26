@@ -26,6 +26,9 @@ export class LinksPlugin extends Plugin {
     const airbnb = new AirbnbService();
     const listings = await airbnb.getAllListingsDetails();
     const message = listings
+      .sort((listing1, listing2) =>
+        +listing1.price.match(/\d+/)[0] - +listing2.price.match(/\d+/)[0],
+      )
       .map((listing) => this.listingDetailsToLink(listing))
       .concat('<a href="">_</a>')
       .join('\n');
